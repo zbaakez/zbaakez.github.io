@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.2/underscore-min.js"></script>
+    <script src="./index.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <script src="./scriptAbfahrten.js"></script>
+    <link rel = "icon" href ="./bus-operator.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="./styleAbfahrten.css">
+    <title>BUS API SOUTH TYROL</title>
+    
+</head>
+<header id="header">
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top bg-light">
+        <div id = "leftHead">
+            <img src="./bus-operator.png" id="headerImg" class="rounded float-left" alt="Bus API">
+            <button class="btn-dark-blue btn-rounded" id="moveBtn">Zu Abfahrten</button>
+        </div>
+        <div id="rightHead">
+            <h5><div id="spanTime"></div></h5>
+        </div>
+        
+      </nav>
+    
+</header>
+<body>
+
+    <div id="about">
+
+        <div id="about-1" class="page">
+
+            <div id="inputs">
+                <div class="form-group">
+                    <label><h5>Startpunkt</h5></label>
+                    <input spellcheck="false" type="search" class="form-control" id="startInput" placeholder="Startpunkt">
+                </div>
+                <div id="endPunktInputDiv" class="form-group">
+                    <label><h5>Endpunkt</h5></label>
+                    <input spellcheck="false" type="search" class="form-control" id="endInput" placeholder="Endpunkt">
+                </div>
+                
+                <div id="spaceDiv"></div>
+                
+                <div class="accordion">
+                    <h2 class="accordion-item" id="headingTime">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseTime" aria-expanded="false" aria-controls="collapseTime">
+                            <h5>Weitere Optionen</h5>
+                        </button>
+                    </h2>
+                    <div id="collapseTime" class="accordion-collapse collapse">
+                        <div class="accordion-body border rounded">
+                            <div class="form-group">
+                                <button onclick="selectDepartOrArrivalTime(true)" id="selectAbfahrtszeit"
+                                    class="btn btn-primary rounded-pill">
+                                    <h6>Abfahrtszeit</h6>
+                                </button>
+                                <button onclick="selectDepartOrArrivalTime(false)" id="selectAnkunftszeit"
+                                    class="btn btn-primary rounded-pill">
+                                    <h6>Ankunftszeit</h6>
+                                </button>
+                                <input type="time" class="form-control" id="timePick" placeholder="Time"></input>
+                            </div>
+                            <br>
+        
+                            <div class="form-group">
+                                <label>
+                                    <h6>Abfahrtsdatum</h6>
+                                </label>
+                                <input type="date" class="form-control" id="datePick" placeholder="Date">
+                            </div>
+                            <br>
+                            
+                            <div>
+                                <h5>Art der Verbindung</h5>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" onclick="radioClicked(1)" type="radio" name="flexRadioDefault"
+                                    id="radioSchnellste" checked>
+                                <label class="form-check-label" id="radioLabel1" for="flexRadioDefault1">
+                                    <h6>schnellste</h6>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" onclick="radioClicked(2)" type="radio" name="flexRadioDefault"
+                                    id="radioUmstiege">
+                                <label class="form-check-label" id="radioLabel2" for="flexRadioDefault2">
+                                    wenig Umstiege
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" onclick="radioClicked(3)" type="radio" name="flexRadioDefault"
+                                    id="radioFusswege">
+                                <label class="form-check-label" id="radioLabel3" for="flexRadioDefault3">
+                                    kurze Fußwege
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="searchConnection()" id="searchButton" class="btn-dark-blue btn-rounded">Verbindung suchen!</button>
+                <br>
+                <br>
+                <div class="d-flex justify-content-center">
+                    <div hidden="true"  id ="spinner" class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #348AC7;" role="status">
+                      <span class="sr-only"></span>
+                    </div>
+                </div>
+                <div id = "outputRoutes"></div>
+            </div>
+            <br>
+           
+        </div>
+
+        
+        <div id="about-2" class="page nodisplay">
+            <br>
+             
+            <div id="abfahrtenTable">
+                <div class="form-group">
+                    <label>
+                        <h5>Haltestelle</h5>
+                    </label>
+                    <input spellcheck="false" type="search" class="form-control" id="abfahrtenInput"placeholder="Haltestelle">
+                </div>
+                <br>
+                <div>
+                  <img src="" hidden = "true" id = "imageWeatherAbfahrten">
+                  <div id="abfahrtenTemperatur" hidden="true"></div>
+                </div>
+                <div class="d-flex justify-content-center">
+                  <div hidden="true"  id ="spinner3" class="spinner-border" style="width: 2.5rem; height: 2.5rem; margin-bottom: 1.5rem; color: #348AC7;" role="status">
+                    <span class="sr-only"></span>
+                  </div>
+              </div>
+            <table class="table table-striped"  id="tableBus">
+                <thead class = "table-dark" >
+                  <tr>
+                    <th scope="col">NR</th>
+                    <th scope="col">Start</th>
+                    <th scope="col">Straßenseite</th>
+                    <th scope="col">Ankunftsort</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row" id="busNr1"></th>
+                    <td id="start1"></td>
+                    <td id="seite1"></td>
+                    <td id ="ankunft1"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr2"></th>
+                    <td id="start2"></td>
+                    <td id="seite2"></td>
+                    <td id ="ankunft2"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr3"></th>
+                    <td id="start3"></td>
+                    <td id="seite3"></td>
+                    <td id ="ankunft3"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr4"></th>
+                    <td id="start4"></td>
+                    <td id="seite4"></td>
+                    <td id ="ankunft4"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr5"></th>
+                    <td id="start5"></td>
+                    <td id="seite5"></td>
+                    <td id ="ankunft5"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr6"></th>
+                    <td id="start6"></td>
+                    <td id="seite6"></td>
+                    <td id ="ankunft6"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr7"></th>
+                    <td id="start7"></td>
+                    <td id="seite7"></td>
+                    <td id ="ankunft7"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr8"></th>
+                    <td id="start8"></td>
+                    <td id="seite8"></td>
+                    <td id ="ankunft8"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr9"></th>
+                    <td id="start9"></td>
+                    <td id="seite9"></td>
+                    <td id ="ankunft9"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr10"></th>
+                    <td id="start10"></td>
+                    <td id="seite10"></td>
+                    <td id ="ankunft10"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr11"></th>
+                    <td id="start11"></td>
+                    <td id="seite11"></td>
+                    <td id ="ankunft11"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr12"></th>
+                    <td id="start12"></td>
+                    <td id="seite12"></td>
+                    <td id ="ankunft12"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr13"></th>
+                    <td id="start13"></td>
+                    <td id="seite13"></td>
+                    <td id ="ankunft13"></td>
+                  
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr14"></th>
+                    <td id="start14"></td>
+                    <td id="seite14"></td>
+                    <td id ="ankunft14"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr15"></th>
+                    <td id="start15"></td>
+                    <td id="seite15"></td>
+                    <td id ="ankunft15"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr16"></th>
+                    <td id="start16"></td>
+                    <td id="seite16"></td>
+                    <td id ="ankunft16"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr17"></th>
+                    <td id="start17"></td>
+                    <td id="seite17"></td>
+                    <td id ="ankunft17"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr18"></th>
+                    <td id="start18"></td>
+                    <td id="seite18"></td>
+                    <td id ="ankunft18"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr19"></th>
+                    <td id="start19"></td>
+                    <td id="seite19"></td>
+                    <td id ="ankunft19"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" id="busNr20"></th>
+                    <td id="start20"></td>
+                    <td id="seite20"></td>
+                    <td id ="ankunft20"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+              
+        </div>
+    </div>
+
+
+</body>
+
+</html>

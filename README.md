@@ -1,2 +1,2 @@
-# zbaakez.github.io
- bus api website
+# SothTyrolBusApi
+kloane Website zun auslesn von Bus Pläne

@@ -1,0 +1,23 @@
+a {
+    font-size: x-large;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.Spalten {
+    margin-left: 9%;
+    display: flex;
+    justify-content: space-around;
+}
+
+.Eintraege {
+    display: flex;
+    justify-content: space-around;
+}
+
+#abfahrtenTable{
+    max-width: 92vw;
+    margin-left: 4vw;
+    margin-right: 4vw;
+}
+
+

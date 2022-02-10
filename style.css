@@ -2,27 +2,47 @@
     margin: 0px;
     padding: 0px;
    font-family:Verdana, Geneva, Tahoma, sans-serif;
+   
 }
-@media (max-width:400px) {
+
+
+@media (max-width:500px) {
     img#headerImg {
       display: none;
     }
+    #moveBtn{
+        min-width: 92vw !important;
+        margin-left: 4vw !important;
+        margin-right: 4vw !important;
+    }
+    #searchButton, #searchMore{
+        min-width: 92vw !important;
+    }
+    
   }
+@media (max-height:600px) {
+    #header{
+    min-height: 20vh !important;
+    }
+    
+}
 
 #header{
-   height: 10vh;
+   height: 5vh;
 }
 
 #headerImg{
     max-height: 8vh;
     padding-left: 4vw;
+    min-height: 60px;
 }
 #moveBtn{
     font-weight: bold;
     font-size: 1.2em;
     margin-left: 2vw;
-    height: 9vh;
-    width: 16em;
+    min-width: 16em;
+    height: 8vh;
+    min-height: 60px;
     
 }
 #endPunktInputDiv{
@@ -43,7 +63,8 @@
     font-size: 1.2em;
     min-width: 92vw;
     height: 8vh;
-    
+    min-height: 60px;
+  
 }
 
 input.loading {

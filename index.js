@@ -43,12 +43,14 @@ window.onload = function () {
     actualStops.shift();
 };
 
+
 function x() {
   var d = new Date();
   var s = d.getSeconds();
   var m = d.getMinutes();
   var h = d.getHours();
-  document.getElementById("spanTime").textContent = ("0" + h).substr(-2) + ":" + ("0" + m).substr(-2) + ":" + ("0" + s).substr(-2);
+  if(!document.getElementById("spanTime"))
+    document.getElementById("spanTime").textContent = ("0" + h).substr(-2) + ":" + ("0" + m).substr(-2) + ":" + ("0" + s).substr(-2);
 }
 
 
@@ -70,9 +72,9 @@ function transistPage() {
   $("#about-2").toggle("slide", { direction: "right" }, 500);
   $("#about-1").toggle("slide", { direction: "left" }, 500);
   if (document.getElementById("moveBtn").textContent.includes("Abfahrten")) {
-    document.getElementById("moveBtn").innerHTML = "<h5>Zu Verbindungen<h5>"
+    document.getElementById("moveBtn").innerHTML = "Zu Verbindungen"
   } else {
-    document.getElementById("moveBtn").innerHTML = "<h5>Zu Abfahrten</h5>"
+    document.getElementById("moveBtn").innerHTML = "Zu Abfahrten"
   }
 }
 

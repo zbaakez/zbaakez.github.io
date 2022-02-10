@@ -70,11 +70,6 @@ async function getDepartures(station){
     });  
     
     write();
-   // alert(arrival[2]);
-    //alert(destination[2]);
-   // alert(startTime[2]);
-
-    
     
 }
 
@@ -108,6 +103,5 @@ async function getData(data){
 
             
     }
-
     return;
 }

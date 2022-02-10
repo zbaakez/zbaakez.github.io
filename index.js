@@ -334,12 +334,22 @@ async function get2PointConnection(src, dest) {
 
 }
 
+
 async function findTempByCoordOrName(longitude, latitude, stationName, src) { //src === true if srcstation, else deststation
   //get temperature of nearest point
-  const openWeather = await fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + latitude + '&lon=' + longitude + '&appid=dc704448494ba8187b5e3cf65aafac7f&units=metric');
-  const openWeatherData = await openWeather.json();
-  let desc = openWeatherData["weather"][0]["description"];
+
+  let error2=0;
+  const openWeather = await fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + latitude + '&lon=' + longitude + '&appid=dc704448494ba8187b5e3cf65aafac7f&units=metric').catch(function(error) {
+    error2 = 1;
+});;
+  let desc =""
   let urlAdd = "";
+  if(error2===0){
+    const openWeatherData = await openWeather.json();
+    desc = openWeatherData["weather"][0]["description"];
+    
+  }
+ 
   if (desc == "clear sky") {
     urlAdd = "Klarer Himmel";
 
@@ -368,9 +378,21 @@ async function findTempByCoordOrName(longitude, latitude, stationName, src) { //
     urlAdd = "Nebelig";
   }
 
+  error2=0;
   let nearestPoint = -1;
-  const weather = await fetch('http://daten.buergernetz.bz.it/services/weather/station?categoryId=1&lang=de&format=json');
-  const weatherData = await weather.json();
+
+  const weather = await fetch('http://daten.buergernetz.bz.it/services/weather/station?categoryId=1&lang=de&format=json').catch(function(error) {
+    error2 = 1;
+});;
+  let weatherData = "";
+  if(error2===0){
+    weatherData = await weather.json();
+  
+  }else{
+    return ["/", ""];
+  }
+
+
   let tempLongitude, tempLatitude, minDifference, difference;
 
   //first search if a name can be found on weatherdata

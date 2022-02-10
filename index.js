@@ -336,7 +336,7 @@ async function get2PointConnection(src, dest) {
 
 async function findTempByCoordOrName(longitude, latitude, stationName, src) { //src === true if srcstation, else deststation
   //get temperature of nearest point
-  const openWeather = await fetch('http://api.openweathermap.org/data/2.5/weather?lat=' + latitude + '&lon=' + longitude + '&appid=dc704448494ba8187b5e3cf65aafac7f&units=metric');
+  const openWeather = await fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + latitude + '&lon=' + longitude + '&appid=dc704448494ba8187b5e3cf65aafac7f&units=metric');
   const openWeatherData = await openWeather.json();
   let desc = openWeatherData["weather"][0]["description"];
   let urlAdd = "";
@@ -627,7 +627,12 @@ function searchMore() {
       document.getElementById("outputRoutes").style.color = "red"
     }
 
-  });
+  }).fail(function() { console.error("Error! No route found!")
+  document.getElementById("spinner").hidden = true;
+  document.getElementById("searchButton").disabled = false;
+  document.getElementById("outputRoutes").innerHTML = "Ein Fehler ist aufgetreten!"
+  document.getElementById("outputRoutes").style.color = "red" })
+  .always(function() { alert("complete"); });;
 
 }
 

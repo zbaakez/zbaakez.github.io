@@ -5,6 +5,7 @@ let interval = null;
 let departureOrArrivalTime = true; //true means departure time, false means arrival time
 let routeType = 0; // 0 -> least time, 1 -> leastInterchange, 2->leastWalking
 window.onload = function () {
+
   //abfahrtenInput
   //wait for user to stopy typing for 250 seconds (library for 2 lines of code)
   $('#startInput').keyup(_.debounce(startInputEvent, 300));
@@ -335,21 +336,26 @@ async function get2PointConnection(src, dest) {
 }
 
 
-async function findTempByCoordOrName(longitude, latitude, stationName, src) { //src === true if srcstation, else deststation
+async function findTempByCoord(longitude, latitude) { //src === true if srcstation, else deststation
   //get temperature of nearest point
+  let error2 = 0;
+  let t = "";
 
-  let error2=0;
-  const openWeather = await fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + latitude + '&lon=' + longitude + '&appid=dc704448494ba8187b5e3cf65aafac7f&units=metric').catch(function(error) {
-    error2 = 1;
-});;
-  let desc =""
+  const openWeather = await fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + latitude + '&lon=' + longitude + '&appid=dc704448494ba8187b5e3cf65aafac7f&units=metric')
+    .catch(function () {
+      error2 = 1;
+    });;
+
+  let desc = ""
   let urlAdd = "";
-  if(error2===0){
+  if (error2 === 0) {
     const openWeatherData = await openWeather.json();
     desc = openWeatherData["weather"][0]["description"];
-    
+    t = openWeatherData["main"]["temp"];
+  } else {
+    return ["/", [""]];
   }
- 
+
   if (desc == "clear sky") {
     urlAdd = "Klarer Himmel";
   } else if (desc == "few clouds") {
@@ -377,11 +383,11 @@ async function findTempByCoordOrName(longitude, latitude, stationName, src) { //
     urlAdd = "Nebelig";
   }
 
-  error2=0;
-  let nearestPoint = -1;
+  error2 = 0;
 
- 
-  value.push(openWeatherData["weather"][1]["temp"]);
+
+  let value = [];
+  value.push(t);
   value.push(urlAdd)
   return value;
 }
@@ -395,11 +401,11 @@ async function buildFrontend(holeTrip) {
   let code = "";
 
   //Frontend zusammenbauen
-  let srcTemp1 = await findTempByCoordOrName(Number(holeTrip[0].subTrip[0].srcStationLongitude), Number(holeTrip[0].subTrip[0].srcStationLatitude), srcInput, true);
-  let destTemp1 = await findTempByCoordOrName(Number(holeTrip[0].subTrip[0].EndStationLongitude), Number(holeTrip[0].subTrip[0].EndStationLatitude), destInput, false);
-  
+  let srcTemp1 = await findTempByCoord(Number(holeTrip[0].subTrip[0].srcStationLongitude), Number(holeTrip[0].subTrip[0].srcStationLatitude));
+  let destTemp1 = await findTempByCoord(Number(holeTrip[0].subTrip[0].EndStationLongitude), Number(holeTrip[0].subTrip[0].EndStationLatitude));
+
   let d1 = new Date();
-  let today = (padTo2Digits(d1.getDate())) + "." +(padTo2Digits(d1.getMonth()+1)) + "."+d1.getFullYear();
+  let today = (padTo2Digits(d1.getDate())) + "." + (padTo2Digits(d1.getMonth() + 1)) + "." + d1.getFullYear();
 
   for (let i = 0; i < holeTrip.length; i++) {
 
@@ -451,17 +457,17 @@ async function buildFrontend(holeTrip) {
     }
 
     code += "</div>"
-    
-    
+
+
     let date = ""
-    if(holeTrip[i].subTrip[0].startDate != today)
-      date = ", "+holeTrip[i].subTrip[0].startDate+"";
+    if (holeTrip[i].subTrip[0].startDate != today)
+      date = ", " + holeTrip[i].subTrip[0].startDate + "";
 
     if (holeTrip[i].subTrip.length > 1) {
-      
-      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + ''+date+'</h5>\n';
+
+      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
     } else {
-      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + ''+date+'</h5>\n';
+      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
     }
     code += '</button>\n</h2>';
     code += '<div id="collapseRoute' + i + '" class="accordion-collapse collapse">\n';
@@ -606,12 +612,13 @@ function searchMore() {
       document.getElementById("outputRoutes").style.color = "red"
     }
 
-  }).fail(function() { console.error("Error! No route found!")
-  document.getElementById("spinner").hidden = true;
-  document.getElementById("searchButton").disabled = false;
-  document.getElementById("outputRoutes").innerHTML = "Ein Fehler ist aufgetreten!"
-  document.getElementById("outputRoutes").style.color = "red" })
-  .always(function() { alert("complete"); });;
+  }).fail(function () {
+    console.error("Error! No route found!")
+    document.getElementById("spinner").hidden = true;
+    document.getElementById("searchButton").disabled = false;
+    document.getElementById("outputRoutes").innerHTML = "Ein Fehler ist aufgetreten!"
+    document.getElementById("outputRoutes").style.color = "red"
+  });
 
 }
 

@@ -1,2 +1,2 @@
-# SothTyrolBusApi
-kloane Website zun auslesn von Bus Pläne
+# Südtirols öffentliche Verkehrsmittel
+Kleine Website zum Auslesn von  Verkehrsrouten der öffentlichen Verkehrsmittel in Südtirol.

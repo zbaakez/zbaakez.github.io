@@ -27,7 +27,7 @@ window.onload = function () {
 
 
   setAutocompleteListeners();
-  setInterval(x, 1000);
+  setInterval(printTime, 1000);
   actualStopsSessions = sessionStorage.getItem("stopSession");
   if (actualStopsSessions !== null) {
     if (actualStopsSessions.split("#")[0] !== null) {
@@ -40,16 +40,21 @@ window.onload = function () {
     }
   }
 
+
+  //swipes for mobile devices
+  document.addEventListener('swiped-left', function(e) {
+    swipedToLeft();
+  });
+  document.addEventListener('swiped-right', function(e) {
+    swipedToRight()
+  });
+
   if (actualStops[0] === "null")
     actualStops.shift();
 
 };
-/*
-#leftHead
-{
-    width: 90vw;
-}*/
-function x() {
+
+function printTime() {
   let d = new Date();
   let s = d.getSeconds();
   let m = d.getMinutes();
@@ -66,12 +71,6 @@ function x() {
   }catch{
     return;
   }
-  
-  
-  
-  
-    
-  
 
   try{
     document.getElementById("spanTime").textContent = ("0" + h).substr(-2) + ":" + ("0" + m).substr(-2) + ":" + ("0" + s).substr(-2);
@@ -79,6 +78,10 @@ function x() {
     
   }
      
+}
+
+window.onbeforeunload = function () {
+  window.scrollTo(0, 0);
 }
 
 
@@ -93,7 +96,24 @@ function abfahrtenInputEvent() {
 }
 
 
+function swipedToRight(){
+  if(!document.getElementById("moveBtn").textContent.includes("Abfahrten")){
+    $("#about-2").toggle("slide", { direction: "right" }, 400);
+    $("#about-1").toggle("slide", { direction: "left" }, 400);
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    document.getElementById("moveBtn").innerHTML = "Zu Abfahrten"
+  }
+}
+function swipedToLeft(){
+  
+  if(document.getElementById("moveBtn").textContent.includes("Abfahrten")){
+    $("#about-2").toggle("slide", { direction: "right" }, 500);
+    $("#about-1").toggle("slide", { direction: "left" }, 500);
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    document.getElementById("moveBtn").innerHTML = "Zu Verbindungen"
+  }
 
+}
 
 function transistPage() {
 
@@ -203,6 +223,12 @@ function setAutocompleteListeners() {
     messages: {
       noResults: '',
       results: function () { }
+    },select: function (event, ui) {
+      //disable keyboard on phones
+      let el= document.getElementById("startInput");
+      el.inputMode="none";
+      reenableKeyboardPhone(el);
+      el.classList.remove("loading");
     }
   });
   $("#endInput").autocomplete({
@@ -216,6 +242,12 @@ function setAutocompleteListeners() {
     messages: {
       noResults: '',
       results: function () { }
+    },select: function (event, ui) {
+      //disable keyboard on phones
+      let el= document.getElementById("endInput");
+      el.inputMode="none";
+      reenableKeyboardPhone(el);
+      el.classList.remove("loading");
     }
   });
   $("#abfahrtenInput").autocomplete({
@@ -231,11 +263,16 @@ function setAutocompleteListeners() {
       results: function () { }
     },
     select: function (event, ui) {
+      //disable keyboard on phones
+      let el=document.getElementById("abfahrtenInput");
+      el.inputMode="none"
+      el.classList.remove("loading");
       if (interval !== null)
         clearInterval(interval);
-
+      
       document.getElementById("spinner3").hidden = false;
       getDepartures(ui.item.label)
+      reenableKeyboardPhone(el)
       interval = setInterval(function () {
         getDepartures(ui.item.label);
       }, 30 * 1000);
@@ -244,9 +281,13 @@ function setAutocompleteListeners() {
 
   });
 
-
+  
 }
 
+async function reenableKeyboardPhone(el) {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  el.inputMode = "search";
+}
 
 function searchConnection() {
   let el1 = document.getElementById('startInput');
@@ -449,8 +490,6 @@ async function buildFrontend(holeTrip) {
     code += '<h2 class="accordion-item" id="headingRoute' + i + '">\n';
     code += '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"\n';
     code += ' data-bs-target="#collapseRoute' + i + '" aria-expanded="false" aria-controls="collapseRoute' + i + '">\n';
-    let transfers = [];
-
 
     code += "<div class=\"transferListOutput\">"
     let next = "";
@@ -578,7 +617,7 @@ async function buildFrontend(holeTrip) {
     document.getElementById("outputRoutes").innerHTML += code;
     code = "";
   }
-  document.getElementById("outputRoutes").innerHTML += code += '<div class="d-flex justify-content-center"><div hidden="true"  id ="spinner2" class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #348AC7;" role="status"><span class="sr-only"></span> </div></div>';
+  document.getElementById("outputRoutes").innerHTML += code + '<div class="d-flex justify-content-center"><div hidden="true"  id ="spinner2" class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #348AC7;" role="status"><span class="sr-only"></span> </div></div>';
   sessionStorage.setItem('stopSession', actualStopsSessions + "#" + srcInput + "#" + destInput);
   document.getElementById("outputRoutes").innerHTML += '<button onclick="searchMore()" id="searchMore" class="btn-dark-blue btn-rounded">Weitere Routen suchen!</button>';
   document.getElementById("spinner").hidden = true;
@@ -591,7 +630,7 @@ async function buildFrontend(holeTrip) {
 function searchMore() {
   document.getElementById("spinner2").hidden = false;
   document.getElementById("searchMore").disabled = true;
-
+  let lengthtripsBefore = holeTrip.length;
   let lastTime = holeTrip[holeTrip.length - 1]["subTrip"][0]["startTime"].split(":");
   const Date1 = new Date(holeTrip[holeTrip.length - 1]["subTrip"][0]["startDate"].split(".")[2], holeTrip[holeTrip.length - 1]["subTrip"][0]["startDate"].split(".")[1] - 1, holeTrip[holeTrip.length - 1]["subTrip"][0]["startDate"].split(".")[0], lastTime[0], lastTime[1]);
   Date1.setTime(Date1.getTime() + 1000 * 60); // add 1 minute
@@ -629,9 +668,11 @@ function searchMore() {
         holeTrip[holeTrip.length] = new HoleTrip(data["trips"][i]);
         holeTrip[holeTrip.length - 1].findTrips();
       }
-      document.getElementById("outputRoutes").innerHTML = "";
-      buildFrontend(holeTrip);
-
+     // document.getElementById("outputRoutes").innerHTML = "";
+     // buildFrontend(holeTrip);
+     document.getElementById("searchMore").remove();
+     document.getElementById("spinner2").remove();
+      addTripsToFrontend(holeTrip, lengthtripsBefore)
     } else {
       //Wenn wegen falscher eingabe oder anderen fehlern keine Routen gefunden werden
       console.error("Error! No route found!")
@@ -650,6 +691,157 @@ function searchMore() {
   });
 
 }
+
+
+async function addTripsToFrontend(holeTrip, lengthBefore){
+
+  let code = "";
+  let d1 = new Date();
+  let today = (padTo2Digits(d1.getDate())) + "." + (padTo2Digits(d1.getMonth() + 1)) + "." + d1.getFullYear();
+
+  for (let i = lengthBefore; i < holeTrip.length; i++) {
+
+    code = "<br>";
+    code += '<div class="accordion">\n';
+    code += '<h2 class="accordion-item" id="headingRoute' + i + '">\n';
+    code += '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"\n';
+    code += ' data-bs-target="#collapseRoute' + i + '" aria-expanded="false" aria-controls="collapseRoute' + i + '">\n';
+    code += "<div class=\"transferListOutput\">"
+    let next = "";
+
+    for (let x = 0; x < holeTrip[i].subTrip.length; x++) {
+      if (x < holeTrip[i].subTrip.length - 1)
+        next = ">";
+      else
+        next = "";
+
+      if (holeTrip[i].subTrip[x].typeOfVehicle === "5" || holeTrip[i].subTrip[x].typeOfVehicle === "6" || holeTrip[i].subTrip[x].typeOfVehicle === "7") { //bus
+        code += '<div class="busTransferOutput"> ' + holeTrip[i].subTrip[x].numberOfTransfer + '</div>'
+      }
+      else if (holeTrip[i].subTrip[x].typeOfVehicle === "0") { // zug
+        if (holeTrip[i].subTrip[x].nameOfTransfer.includes("V"))
+          code += '<div class="trainTransferOutput">RV</div>'
+        else
+          code += '<div class="trainTransferOutput">R</div>'
+      }
+      else if (holeTrip[i].subTrip[x].typeOfVehicle === "8") { // Seilbahn
+        code += '<div class="seilbahnTransferOutput"> S' + next + '</div>'
+      }
+      else {
+        if (holeTrip[i].subTrip[x].nameOfTransfer === "") { //zufuß
+          code += '<div class="walkTransferOutput">&#128694;</div>'
+        }
+        else { // anderes Mittel
+          code += '<div class="otherTransferOutput">A ' + holeTrip[i].subTrip[x].numberOfTransfer + '</div>'
+        }
+      }
+      if (next === ">")
+        code += '<div class="nextOut"> > </div>';
+    }
+
+    code += "</div>"
+
+    let date = ""
+    if (holeTrip[i].subTrip[0].startDate != today)
+      date = ", " + holeTrip[i].subTrip[0].startDate + "";
+
+    if (holeTrip[i].subTrip.length > 1) {
+
+      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
+    } else {
+      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
+    }
+    code += '</button>\n</h2>';
+    code += '<div id="collapseRoute' + i + '" class="accordion-collapse collapse">\n';
+    code += '<div class="accordion-body border rounded">\n';
+
+
+    for (let x = 0; x < holeTrip[i].subTrip.length; x++) {
+
+      if (x !== 0) {
+        code += '<div class="umstieg_output">&#128694; ' + holeTrip[i].subTrip[x - 1].expectedTransferTime + ' min, ' + holeTrip[i].subTrip[x - 1].timeToTransferinMinutes + ' min Umstiegszeit</div>';
+      }
+
+      code += '<div class="accordion accordion-flush" id="' + i + 'bodySub' + x + '">'
+      code += '<div class="accordion-item">'
+      code += '<h2 class="accordion-header border rounded" id="' + i + 'bodyHeader' + x + '">'
+      code += '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse' + i + 'Body' + x + '" aria-expanded="false" aria-controls="collapse' + i + 'Body' + x + '">'
+
+      if (holeTrip[i].subTrip[x].typeOfVehicle === "5" || holeTrip[i].subTrip[x].typeOfVehicle === "6" || holeTrip[i].subTrip[x].typeOfVehicle === "7") { //bus
+        if (holeTrip[i].subTrip[x].trainPlatformStart != "")
+          code += '<div class="busTransferOutput border rounded" style = "margin-right: 10px">' + holeTrip[i].subTrip[x].nameOfTransfer + '</div> ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Plattform: ' + holeTrip[i].subTrip[x].trainPlatformStart + ', Nach: ' + holeTrip[i].subTrip[x].destStation + ', Endstation: ' + holeTrip[i].subTrip[x].lastDesination + '</button> </h2>';
+        else
+          code += '<div class="busTransferOutput border rounded" style = "margin-right: 10px">' + holeTrip[i].subTrip[x].nameOfTransfer + '</div> ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Nach: ' + holeTrip[i].subTrip[x].destStation + ', Endstation: ' + holeTrip[i].subTrip[x].lastDesination + '</button> </h2>';
+
+      }
+      else if (holeTrip[i].subTrip[x].typeOfVehicle === "0") { // zug
+        if (holeTrip[i].subTrip[x].trainPlatformStart != "")
+          code += '<div class="trainTransferOutput border rounded" style = "margin-right: 10px">' + holeTrip[i].subTrip[x].nameOfTransfer + '</div> ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Gleis: ' + holeTrip[i].subTrip[x].trainPlatformStart + ', Nach: ' + holeTrip[i].subTrip[x].destStation + ', Endstation: ' + holeTrip[i].subTrip[x].lastDesination + '</button> </h2>';
+        else
+          code += '<div class="trainTransferOutput border rounded" style = "margin-right: 10px">' + holeTrip[i].subTrip[x].nameOfTransfer + '</div> ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Nach: ' + holeTrip[i].subTrip[x].destStation + ', Endstation: ' + holeTrip[i].subTrip[x].lastDesination + '</button> </h2>';
+
+      }
+      else if (holeTrip[i].subTrip[x].typeOfVehicle === "8") { // Seilbahn
+        if (holeTrip[i].subTrip[x].trainPlatformStart != "")
+          code += '<div class="seilbahnTransferOutput border rounded" style = "margin-right: 10px">Seilbahn ' + holeTrip[i].subTrip[x].nameOfTransfer + '</div> ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Plattform: ' + holeTrip[i].subTrip[x].trainPlatformStart + ', Nach: ' + holeTrip[i].subTrip[x].destStation + ', Endstation: ' + holeTrip[i].subTrip[x].lastDesination + '</button> </h2>';
+        else
+          code += '<div class="seilbahnTransferOutput border rounded" style = "margin-right: 10px">Seilbahn ' + holeTrip[i].subTrip[x].nameOfTransfer + '</div> ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Nach: ' + holeTrip[i].subTrip[x].destStation + ', Endstation: ' + holeTrip[i].subTrip[x].lastDesination + '</button> </h2>';
+
+      }
+      else {
+        if (holeTrip[i].subTrip[x].nameOfTransfer === "") { //zufuß
+          if (holeTrip[i].subTrip[x].trainPlatformStart != "")
+            code += '<div class="walkTransferOutput border rounded" style = "margin-right: 10px">Fußweg</div> ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Plattform: ' + holeTrip[i].subTrip[x].trainPlatformStart + ', Nach: ' + holeTrip[i].subTrip[x].destStation + '</button> </h2>';
+          else
+            code += '<div class="walkTransferOutput border rounded" style = "margin-right: 10px">Fußweg</div> ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Nach: ' + holeTrip[i].subTrip[x].destStation + '</button> </h2>';
+        }
+        else { // anderes Mittel
+          if (holeTrip[i].subTrip[x].trainPlatformStart != "")
+            code += '<div class="otherTransferOutput border rounded" style = "margin-right: 10px">Andere - ' + holeTrip[i].subTrip[x].nameOfTransfer + '</div>, ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Plattform: ' + holeTrip[i].subTrip[x].trainPlatformStart + ', Nach: ' + holeTrip[i].subTrip[x].destStation + ', Endstation: ' + holeTrip[i].subTrip[x].lastDesination + '</button> </h2>';
+          else
+            code += '<div class="otherTransferOutput border rounded" style = "margin-right: 10px">Andere - ' + holeTrip[i].subTrip[x].nameOfTransfer + '</div>, ' + holeTrip[i].subTrip[x].rtStartTime + '-' + holeTrip[i].subTrip[x].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[x].srcStation + ', Nach: ' + holeTrip[i].subTrip[x].destStation + ', Endstation: ' + holeTrip[i].subTrip[x].lastDesination + '</button> </h2>';
+        }
+      }
+
+
+      code += '<div id="collapse' + i + 'Body' + x + '" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#collapse' + i + 'Body' + x + '">'
+      code += '<br><div class="stopsOutput border rounded"><div class="finalStops">Dauer: ' + holeTrip[i].subTrip[x].duration + ' Min, Zwischenhalte: ' + (holeTrip[i].subTrip[x].stops.length - 2) + '<br>';
+
+      for (let j = 0; j < holeTrip[i].subTrip[x].stops.length; j++) {
+
+        if (holeTrip[i].subTrip[x].arrTimes[j] !== undefined) {
+
+          if (holeTrip[i].subTrip[x].arrTimes[j].length < 7) {
+            code += '<br>' + holeTrip[i].subTrip[x].stops[j] + " " + holeTrip[i].subTrip[x].arrTimes[j] + ' ';
+          }
+          else {
+            code += '<br>' + holeTrip[i].subTrip[x].stops[j] + " " + holeTrip[i].subTrip[x].arrTimes[j].split(" ")[1] + ' ';
+          }
+        }
+
+      }
+
+      code += "</div></div></div></div></div>";
+      code += "<br>";
+    }
+
+    code += ' </div>\n';
+    code += ' </div>\n';
+
+    document.getElementById("outputRoutes").innerHTML += code;
+    code = "";
+  }
+  document.getElementById("outputRoutes").innerHTML += code + '<div class="d-flex justify-content-center"><div hidden="true"  id ="spinner2" class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #348AC7;" role="status"><span class="sr-only"></span> </div></div>';
+  document.getElementById("outputRoutes").innerHTML += '<button onclick="searchMore()" id="searchMore" class="btn-dark-blue btn-rounded">Weitere Routen suchen!</button>';
+  document.getElementById("spinner").hidden = true;
+  document.getElementById("spinner2").hidden = true;
+  document.getElementById("searchMore").disabled = false;
+
+
+
+}
+
+
 
 //should be upgraded to also respect dates
 function hoursToMinutes(time) {

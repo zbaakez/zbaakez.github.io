@@ -352,7 +352,6 @@ async function findTempByCoordOrName(longitude, latitude, stationName, src) { //
  
   if (desc == "clear sky") {
     urlAdd = "Klarer Himmel";
-
   } else if (desc == "few clouds") {
     urlAdd = "Wenige Wolken";
   }
@@ -381,52 +380,8 @@ async function findTempByCoordOrName(longitude, latitude, stationName, src) { //
   error2=0;
   let nearestPoint = -1;
 
-  const weather = await fetch('http://daten.buergernetz.bz.it/services/weather/station?categoryId=1&lang=de&format=json').catch(function(error) {
-    error2 = 1;
-    throw error;
-});;
-  let weatherData = "";
-  if(error2===0){
-    weatherData = await weather.json();
-  
-  }else{
-    console.log("wett " + error2)
-    return ["/", urlAdd];
-  }
-
-
-  let tempLongitude, tempLatitude, minDifference, difference;
-
-  //first search if a name can be found on weatherdata
-  stationName = stationName.replace("%20", " ");
-  let stationNames = stationName.split(" ");
-  if (stationNames.includes("Lana") || stationNames.includes("Lana,"))
-    stationNames.push("Gargazon")
-
-  for (let i = 0; i < weatherData["rows"].length; i++) {
-    for (let x = 0; x < stationNames.length; x++) {
-      if (weatherData["rows"][i]["name"].includes(stationNames[x].replace(/[^a-zA-Z]+/g, '')) && stationNames[x].replace(/[^a-zA-Z]+/g, '').length > 3) {
-        nearestPoint = i;
-      }
-    }
-  }
-
-  if (nearestPoint < 0) {
-    for (let s = 0; s < weatherData["rows"].length; s++) {
-      tempLongitude = Number(weatherData["rows"][s]["longitude"].replace(",", "."));
-      tempLatitude = Number(weatherData["rows"][s]["latitude"].replace(",", "."));
-      difference = Math.abs((tempLongitude + tempLatitude) - (latitude + longitude));
-      if (s === 0) {
-        minDifference = difference;
-        nearestPoint = 0;
-      } else if ((difference < minDifference && difference > 0)) {
-        minDifference = difference;
-        nearestPoint = s;
-      }
-    }
-  }
-  let value = [];
-  value.push(weatherData["rows"][nearestPoint]["t"]);
+ 
+  value.push(openWeatherData["weather"][1]["temp"]);
   value.push(urlAdd)
   return value;
 }

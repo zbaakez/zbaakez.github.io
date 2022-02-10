@@ -11,10 +11,7 @@ window.onload = function () {
   $('#startInput').keyup(_.debounce(startInputEvent, 300));
   $('#endInput').keyup(_.debounce(endInputEvent, 300));
   $('#abfahrtenInput').keyup(_.debounce(abfahrtenInputEvent, 300));
-  document.getElementById("selectAbfahrtszeit").style.background = "green";
-  document.getElementById("selectAbfahrtszeit").style.borderColor = "green";
-  document.getElementById("selectAnkunftszeit").style.background = "lightgrey";
-  document.getElementById("selectAnkunftszeit").style.borderColor = "lightgrey";
+  
   let date = new Date()
   let time = date.toLocaleTimeString().split(":");
   let srcInput = "";
@@ -22,9 +19,13 @@ window.onload = function () {
   let holeTrip = [];
   let urlSud = "";
   time.pop();
-  document.getElementById('datePick').value = date.toISOString().split('T')[0];
-  document.getElementById('timePick').value = time.join(":");
-  document.getElementById("moveBtn").addEventListener("click", transistPage);
+  
+  if(document.getElementById('datePick'))
+    document.getElementById('datePick').value = date.toISOString().split('T')[0];
+  if(document.getElementById('timePick'))
+    document.getElementById('timePick').value = time.join(":");
+
+
   setAutocompleteListeners();
   setInterval(x, 1000);
   actualStopsSessions = sessionStorage.getItem("stopSession");
@@ -41,16 +42,43 @@ window.onload = function () {
 
   if (actualStops[0] === "null")
     actualStops.shift();
+
 };
-
-
+/*
+#leftHead
+{
+    width: 90vw;
+}*/
 function x() {
-  var d = new Date();
-  var s = d.getSeconds();
-  var m = d.getMinutes();
-  var h = d.getHours();
-  if(!document.getElementById("spanTime"))
+  let d = new Date();
+  let s = d.getSeconds();
+  let m = d.getMinutes();
+  let h = d.getHours();
+  try{
+    let x = document.getElementById("spanTime");
+    if(($(window).width()>=600) && (x==null)){
+      document.getElementById("nav").innerHTML += '<div id="rightHead"><h5><div id="spanTime"></div></h5></div>'
+    }
+    if (window.getComputedStyle(x).visibility === "hidden") {
+      document.getElementById("rightHead").remove();
+    }
+    
+  }catch{
+    return;
+  }
+  
+  
+  
+  
+    
+  
+
+  try{
     document.getElementById("spanTime").textContent = ("0" + h).substr(-2) + ":" + ("0" + m).substr(-2) + ":" + ("0" + s).substr(-2);
+  }catch {
+    
+  }
+     
 }
 
 
@@ -71,13 +99,20 @@ function transistPage() {
 
   $("#about-2").toggle("slide", { direction: "right" }, 500);
   $("#about-1").toggle("slide", { direction: "left" }, 500);
+  window.scrollTo({top: 0, behavior: 'smooth'});
   if (document.getElementById("moveBtn").textContent.includes("Abfahrten")) {
     document.getElementById("moveBtn").innerHTML = "Zu Verbindungen"
+    document.getElementById("abfahrtenTable").hidden = true;
+    hideFalseAfterLoading();
   } else {
     document.getElementById("moveBtn").innerHTML = "Zu Abfahrten"
   }
 }
 
+async function hideFalseAfterLoading() {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  document.getElementById("abfahrtenTable").hidden = false;
+}
 
 async function getStops(text, { signal } = {}) {
   if (text.length > 2) {
@@ -281,6 +316,14 @@ function radioClicked(radioNr) {
 
 async function get2PointConnection(src, dest) {
 
+  if(src == "" || dest == ""){
+    document.getElementById("spinner").hidden = true;
+    document.getElementById("searchButton").disabled = false;
+    document.getElementById("outputRoutes").innerHTML = "Gib gültige Haltestellen ein."
+    document.getElementById("outputRoutes").style.color = "red"
+    return;
+  }
+
   let srcString = src.split(" ").join("%20");
   let destString = dest.split(" ").join("%20");
   let startTime = document.getElementById("timePick").value.split(":").join(""); //&itdTime=HHMM&
@@ -358,38 +401,22 @@ async function findTempByCoord(longitude, latitude) { //src === true if srcstati
     return ["/", [""]];
   }
 
-  if (desc == "clear sky") {
-    urlAdd = "Klarer Himmel";
-  } else if (desc == "few clouds") {
-    urlAdd = "Wenige Wolken";
-  }
-  else if (desc == "scattered clouds") {
-    urlAdd = "Wolken";
-  }
-  else if (desc == "broken clouds") {
-    urlAdd = "Wolken";
-  }
-  else if (desc == "shower clouds") {
-    urlAdd = "Regenwolken";
-  }
-  else if (desc == "rain") {
-    urlAdd = "Regen";
-  }
-  else if (desc == "thunderstorm") {
-    urlAdd = "Gewitter";
-  }
-  else if (desc == "snow") {
-    urlAdd = "Schneefall";
-  }
-  else if (desc == "mist") {
-    urlAdd = "Nebelig";
-  }
+  switch(desc){
+    case "": urlAdd = ""; break;
+    case "clear sky": urlAdd="Klarer Himmel"; break;
+    case "few clouds": urlAdd="Wenige Wolken"; break;
+    case "scattered clouds": urlAdd="Wolken"; break;
+    case "broken clouds": urlAdd="Wolken"; break;
+    case "shower clouds": urlAdd="Regenwolken"; break;
+    case "rain": urlAdd="Regen"; break;
+    case "thunderstorm": urlAdd="Gewitter"; break;
+    case "snow": urlAdd="Schneefall"; break;
+    case "mist": urlAdd="Nebelig"; break;
+    default: urlAdd="";
 
-  error2 = 0;
-
-
+  }
   let value = [];
-  value.push(t);
+  value.push(Number(t).toFixed(1));
   value.push(urlAdd)
   return value;
 }

@@ -7,7 +7,7 @@
 }
 
 
-@media (max-width:500px) {
+@media (max-width:600px) {
     img#headerImg {
       display: none;
     }
@@ -19,21 +19,22 @@
     #searchButton, #searchMore{
         min-width: 92vw !important;
     }
+    #spanTime{
+        visibility: hidden;
+    }
+    
     
   }
 @media (max-height:600px) {
-    #header{
-    min-height: 20vh !important;
-    }
-    #about-2, #about-1 {
-        height: 79.8vh !important;
+    header{
+        min-height: 20vh !important;
     }
     
 }
 
-#header{
+header{
    min-height: 10vh;
-   margin-bottom: 2vh;
+   margin-bottom: 3vh;
 }
 
 #headerImg{
@@ -50,11 +51,14 @@
     min-height: 60px;
     
 }
+#abfahrtenTable{
+    margin-top: 1vh;
+}
+
 #endPunktInputDiv{
     padding-top: 1.2vh;
 }
 #inputs{
-    
     max-width: 92vw;
     margin: auto;
 }
@@ -83,6 +87,12 @@ input.loading {
     box-shadow: none !important;
 }
 
+table{
+    font-size: 1.2vw;;
+ }
+ .headTableAbfahrten{
+     font-size: 1.5vw;
+ }
 .nodisplay {
     display: none;
 }
@@ -95,9 +105,8 @@ input.loading {
 }
 
 #about-2, #about-1 {
-    min-height: 95vh;
-    padding-top: 11vh;
-    color: #000000;
+    min-height: 75vh;
+    color: #000000;    
 }
 
 .jumbotron {
@@ -187,13 +196,9 @@ input.loading {
     padding-bottom: 1vh;
     padding-left: 1vw;
 }
-#leftHead
-{
-    width: 90vw;
-}
+
 #rightHead {
-    padding-right: 3vw;
-    
+   padding-right: 3vw;
 }
 
 .btn-dark-blue {
@@ -259,12 +264,6 @@ input.loading {
     padding: 4px 4px 4px 4px;
     border-radius: 5px;
 }
-
-body {
-    display: flex;
-    flex-direction: column;
-}
-
 
 footer{
     box-shadow: 0 0 50px 2px #7474bf6e;

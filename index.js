@@ -383,13 +383,15 @@ async function findTempByCoordOrName(longitude, latitude, stationName, src) { //
 
   const weather = await fetch('http://daten.buergernetz.bz.it/services/weather/station?categoryId=1&lang=de&format=json').catch(function(error) {
     error2 = 1;
+    throw error;
 });;
   let weatherData = "";
   if(error2===0){
     weatherData = await weather.json();
   
   }else{
-    return ["/", ""];
+    console.log("wett " + error2)
+    return ["/", urlAdd];
   }
 
 

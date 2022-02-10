@@ -68,6 +68,7 @@ input.loading {
 }
 
 #about-2, #about-1 {
+    height: 88%;
     margin-top: 2vh;
     color: #000000;
 }

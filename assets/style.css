@@ -32,6 +32,10 @@
     
 }
 
+#foot1{
+    min-width: 30vw;
+}
+
 header{
    min-height: 10vh;
    margin-bottom: 3vh;
@@ -49,8 +53,11 @@ header{
     min-width: 16em;
     height: 8vh;
     min-height: 60px;
-    
+    border: none;
+    box-shadow: 0px 0px 2px 2px #7474bf49;
 }
+
+
 #abfahrtenTable{
     margin-top: 1vh;
 }
@@ -73,7 +80,8 @@ header{
     min-width: 92vw;
     height: 8vh;
     min-height: 60px;
-  
+    border: none;
+    box-shadow: 0px 0px 4px 4px #7474bf48;
 }
 
 input.loading {

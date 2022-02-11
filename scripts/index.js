@@ -270,6 +270,7 @@ function setAutocompleteListeners() {
       if (interval !== null)
         clearInterval(interval);
       
+        clearTable();
       document.getElementById("spinner3").hidden = false;
       getDepartures(ui.item.label)
       reenableKeyboardPhone(el)
@@ -427,13 +428,16 @@ async function findTempByCoord(longitude, latitude) { //src === true if srcstati
   let error2 = 0;
   let t = "";
 
+  if(longitude == null || latitude == null || longitude == undefined || latitude == undefined)
+    return ["/", [""]];
+
   const openWeather = await fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + latitude + '&lon=' + longitude + '&appid=dc704448494ba8187b5e3cf65aafac7f&units=metric')
     .catch(function () {
       error2 = 1;
     });;
 
   let desc = ""
-  let urlAdd = "";
+ 
   if (error2 === 0) {
     const openWeatherData = await openWeather.json();
     desc = openWeatherData["weather"][0]["description"];
@@ -449,12 +453,12 @@ async function findTempByCoord(longitude, latitude) { //src === true if srcstati
     case "scattered clouds": urlAdd="Wolken ☁"; break;
     case "broken clouds": urlAdd="Wolken ☁"; break;
     case "shower clouds": urlAdd="Regenwolken ☁"; break;
+    case "overcast clouds": urlAdd="Wolken";break;
     case "rain": urlAdd="Regen 🌧️"; break;
     case "thunderstorm": urlAdd="Gewitter ⛈️"; break;
     case "snow": urlAdd="Schneefall ❄️"; break;
     case "mist": urlAdd="Nebelig 🌫️"; break;
     default: urlAdd="";
-
   }
   let value = [];
   value.push(Number(t).toFixed(1));

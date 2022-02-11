@@ -1,7 +1,6 @@
 let actualStopsSessions;
 let actualStops = [];
 let stops = []; //JSON with stopName and stopID
-
 let interval = null;
 let departureOrArrivalTime = true; //true means departure time, false means arrival time
 let routeType = 0; // 0 -> least time, 1 -> leastInterchange, 2->leastWalking
@@ -173,8 +172,6 @@ async function handleStops(data) {
         }
         stops.push(stopToPush)
       }
-      
-   
       //Bozen gibt komische Daten
       //https://efa.sta.bz.it/apb/XML_STOPFINDER_REQUEST?locationServerActive=1&outputFormat=JSON&type_sf=any&name_sf=Bozen
       if (data["stopFinder"]["points"]["point"]["name"] === "Bozen, Bahnhof Bozen") {
@@ -187,8 +184,6 @@ async function handleStops(data) {
           stops.push(stopToPush)
           actualStops.push("Bozen, Bahnhof Bozen Süd");
         }
-        
-         
         if (!actualStops.includes("Bozen, Bahnhof Bozen Kaiserau")){
           let stopToPush = {
             "stopName": "Bozen, Bahnhof Bozen Kaiserau",
@@ -197,8 +192,6 @@ async function handleStops(data) {
           stops.push(stopToPush)
           actualStops.push("Bozen, Bahnhof Bozen Kaiserau");
         }
-        
-          
         if (!actualStops.includes("Bozen, Lama Bozen")){
           let stopToPush = {
             "stopName": "Bozen, Lama Bozen",
@@ -350,8 +343,8 @@ function searchConnection() {
   getStops({ signal: ac.signal });
   ac.abort(); // cancel the update
 
-  srcInput = document.getElementById("startInput").value;
-  destInput = document.getElementById("endInput").value;
+  srcInput = document.getElementById("startInput").value.trim();
+  destInput = document.getElementById("endInput").value.trim();
 
   let srcID="", destID="";
   for(let i in stops) {
@@ -359,8 +352,21 @@ function searchConnection() {
       srcID=stops[i]["stopID"];
     if(stops[i]["stopName"] === destInput)
       destID=stops[i]["stopID"];
+    if(srcID!=="" && destID!=="")
+      break;
  }
 
+ if((srcID==="" || destID==="") && (srcInput.length>3 && destInput.length>3)){
+  for(let i in stops) {
+    if(stops[i]["stopName"].includes(srcInput) && srcID === "")
+      srcID=stops[i]["stopID"];
+    if(stops[i]["stopName"].includes(destInput) && destID==="")
+      destID=stops[i]["stopID"];
+
+    if(srcID!=="" && destID!=="")
+      break;
+  }
+ }
   get2PointConnection(srcID, destID);
 
 }

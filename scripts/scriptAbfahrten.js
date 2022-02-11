@@ -90,7 +90,7 @@ async function getDepartures(station){
     station = station.split(" ").join("%20");
     stationSave = station;
     
-    let haltestellenLink = "https://efa.sta.bz.it/apb/XML_DM_REQUEST?&locationServerActive=1&outputFormat=JSON&stateless=1&type_dm=any&name_dm="+station+"&mode=direct&coordOutputFormatTail=4&outputFormat=JSON&coordOutputFormat=WGS84[DD.DDDDD]";
+    let haltestellenLink = "https://efa.sta.bz.it/apb/XML_DM_REQUEST?&locationServerActive=1&outputFormat=JSON&stateless=1&type_dm=any&name_dm="+station+"&mode=direct&coordOutputFormatTail=4&outputFormat=JSON&coordOutputFormat=WGS84[DD.DDDDD]&limit=21";
     await fetch(haltestellenLink)  
     .then(res => res.json())
     .then(data =>{getData(data);})

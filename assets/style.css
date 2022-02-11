@@ -234,28 +234,28 @@ table{
 .busTransferOutput{
     background-color: #348AC7;
     color: whitesmoke;
-    padding: 4px 4px 4px 4px;
+    padding: 5px 5px 5px 5px;
     border-radius: 5px;
 }
 
 .trainTransferOutput{
     background-color: rgb(20, 19, 19);
     color: whitesmoke;
-    padding: 4px 4px 4px 4px;
+    padding: 5px 5px 5px 5px;
     border-radius: 5px;
 }
 
 .seilbahnTransferOutput{
     background-color: rgb(73, 73, 73);
     color: whitesmoke;
-    padding: 4px 4px 4px 4px;
+    padding: 5px 5px 5px 5px;
     border-radius: 5px;
 }
 
 .walkTransferOutput{
     background-color: rgb(85, 78, 78);
     color: whitesmoke;
-    padding: 4px 4px 4px 4px;
+    padding: 5px 5px 5px 5px;
     border-radius: 5px;
 }
 

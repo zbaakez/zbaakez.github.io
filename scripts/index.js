@@ -1,9 +1,11 @@
 let actualStopsSessions;
 let actualStops = [];
-let interval = null;
+let stops = []; //JSON with stopName and stopID
 
+let interval = null;
 let departureOrArrivalTime = true; //true means departure time, false means arrival time
 let routeType = 0; // 0 -> least time, 1 -> leastInterchange, 2->leastWalking
+
 window.onload = function () {
 
   //abfahrtenInput
@@ -25,21 +27,8 @@ window.onload = function () {
   if(document.getElementById('timePick'))
     document.getElementById('timePick').value = time.join(":");
 
-
   setAutocompleteListeners();
   setInterval(printTime, 1000);
-  actualStopsSessions = sessionStorage.getItem("stopSession");
-  if (actualStopsSessions !== null) {
-    if (actualStopsSessions.split("#")[0] !== null) {
-
-      let save = actualStopsSessions.split("#");
-      for (let i = 0; i < save.length; i++) {
-        if (!actualStops.includes(save[i]) && save[i] !== null)
-          actualStops.push(save[i]);
-      }
-    }
-  }
-
 
   //swipes for mobile devices
   document.addEventListener('swiped-left', function(e) {
@@ -53,6 +42,7 @@ window.onload = function () {
     actualStops.shift();
 
 };
+
 
 function printTime() {
   let d = new Date();
@@ -168,29 +158,72 @@ async function getStops(text, { signal } = {}) {
 }
 
 async function handleStops(data) {
+
   let el1 = document.getElementById('startInput');
   let el2 = document.getElementById('endInput');
   let el3 = document.getElementById('abfahrtenInput');
+  
   if (data["stopFinder"]["points"]) {
     if (data["stopFinder"]["points"]["point"] !== undefined) { //other structure
-      if (!actualStops.includes(data["stopFinder"]["points"]["point"]["name"]))
+      if (!actualStops.includes(data["stopFinder"]["points"]["point"]["name"])){
         actualStops.push(data["stopFinder"]["points"]["point"]["name"]);
+        let stopToPush = {
+          "stopName": data["stopFinder"]["points"]["point"]["name"],
+          "stopID": data["stopFinder"]["points"]["point"]["stateless"]
+        }
+        stops.push(stopToPush)
+      }
+      
+   
       //Bozen gibt komische Daten
       //https://efa.sta.bz.it/apb/XML_STOPFINDER_REQUEST?locationServerActive=1&outputFormat=JSON&type_sf=any&name_sf=Bozen
       if (data["stopFinder"]["points"]["point"]["name"] === "Bozen, Bahnhof Bozen") {
         //add Bozen Süd, Kaiserau, ...
-        if (!actualStops.includes("Bozen, Bahnhof Bozen Süd"))
+        if (!actualStops.includes("Bozen, Bahnhof Bozen Süd")){
+          let stopToPush = {
+            "stopName": "Bozen, Bahnhof Bozen Süd",
+            "stopID": "66002210"
+          }
+          stops.push(stopToPush)
           actualStops.push("Bozen, Bahnhof Bozen Süd");
-        if (!actualStops.includes("Bozen, Bahnhof Bozen Kaiserau"))
+        }
+        
+         
+        if (!actualStops.includes("Bozen, Bahnhof Bozen Kaiserau")){
+          let stopToPush = {
+            "stopName": "Bozen, Bahnhof Bozen Kaiserau",
+            "stopID": "66002132"
+          }
+          stops.push(stopToPush)
           actualStops.push("Bozen, Bahnhof Bozen Kaiserau");
-        if (!actualStops.includes("Bozen, Lama Bozen"))
+        }
+        
+          
+        if (!actualStops.includes("Bozen, Lama Bozen")){
+          let stopToPush = {
+            "stopName": "Bozen, Lama Bozen",
+            "stopID": "66002175"
+          }
+          stops.push(stopToPush)
           actualStops.push("Bozen, Lama Bozen");
+        }
+        
+          
       }
     }
     else if (data["stopFinder"]["points"].length > 0) {
       for (let i = 0; i < data["stopFinder"]["points"].length; i++) {
-        if (!actualStops.includes(data["stopFinder"]["points"][i]["name"]) && data["stopFinder"]["points"][i]["anyType"] === "stop")
-          actualStops.push(data["stopFinder"]["points"][i]["name"]);
+        if (!actualStops.includes(data["stopFinder"]["points"][i]["name"]) && data["stopFinder"]["points"][i]["anyType"] === "stop"){
+          
+          let stopToPush = {
+            "stopName": data["stopFinder"]["points"][i]["name"],
+            "stopID": data["stopFinder"]["points"][i]["stateless"]
+          }
+          stops.push(stopToPush)
+          actualStops.push(data["stopFinder"]["points"][i]["name"])
+        }
+        
+          
       }
     }
     //force new search on fields
@@ -209,6 +242,7 @@ async function handleStops(data) {
   el2.type = "search";
   el3.type = "search";
 }
+
 
 function setAutocompleteListeners() {
   $("#startInput").autocomplete({
@@ -270,13 +304,20 @@ function setAutocompleteListeners() {
       if (interval !== null)
         clearInterval(interval);
       
-        clearTable();
+      clearTable();
       document.getElementById("spinner3").hidden = false;
       getDepartures(ui.item.label)
+      let stationID="";
+      for(let i in stops) {
+        if(stops[i]["stopName"]===ui.item.label)
+          stationID=stops[i]["stopID"];
+     }
+      reenableKeyboardPhone(el)
+      getDepartures(stationID)
       reenableKeyboardPhone(el)
       interval = setInterval(function () {
-        getDepartures(ui.item.label);
-      }, 30 * 1000);
+        getDepartures(stationID)
+      }, 30 * 100);
 
     }
 
@@ -312,7 +353,15 @@ function searchConnection() {
   srcInput = document.getElementById("startInput").value;
   destInput = document.getElementById("endInput").value;
 
-  get2PointConnection(srcInput, destInput);
+  let srcID="", destID="";
+  for(let i in stops) {
+    if(stops[i]["stopName"] === srcInput)
+      srcID=stops[i]["stopID"];
+    if(stops[i]["stopName"] === destInput)
+      destID=stops[i]["stopID"];
+ }
+
+  get2PointConnection(srcID, destID);
 
 }
 
@@ -388,6 +437,9 @@ async function get2PointConnection(src, dest) {
   //TODO
   //maximalen fußweg einbauen...15min...parameter?
   //evtl verkehrsmittel excluden &excludedMeans=1,2,3&
+ // stopsClass
+
+
   urlSud = 'https://efa.sta.bz.it/apb/XML_TRIP_REQUEST2?locationServerActive=1&stateless=%201&type_origin=any&name_origin=' + srcString + '&type_destination=any&name_destination=' + destString + '&' + arrOrDepTimeString + '&itdTime=' + startTime + '&itdDate=' + startDate + '&calcNumberOfTrips=' + howManyTrips + '&maxChanges=' + maxChanges + routeTypeString + '&useProxFootSearch=1&coordOutputFormatTail=4&outputFormat=JSON&coordOutputFormat=WGS84[DD.DDDDD]';
   $.getJSON(urlSud, function (data) {
     // JSON result in `data` variable
@@ -473,10 +525,14 @@ function padTo2Digits(num) {
 async function buildFrontend(holeTrip) {
 
   let code = "";
-
+  let srcTemp1="";
+  let destTemp1="";
   //Frontend zusammenbauen
-  let srcTemp1 = await findTempByCoord(Number(holeTrip[0].subTrip[0].srcStationLongitude), Number(holeTrip[0].subTrip[0].srcStationLatitude));
-  let destTemp1 = await findTempByCoord(Number(holeTrip[0].subTrip[0].EndStationLongitude), Number(holeTrip[0].subTrip[0].EndStationLatitude));
+  try{
+    srcTemp1 = await findTempByCoord(Number(holeTrip[0].subTrip[0].srcStationLongitude), Number(holeTrip[0].subTrip[0].srcStationLatitude));
+    destTemp1 = await findTempByCoord(Number(holeTrip[0].subTrip[0].EndStationLongitude), Number(holeTrip[0].subTrip[0].EndStationLatitude));
+  }catch{
+  }
 
   let d1 = new Date();
   let today = (padTo2Digits(d1.getDate())) + "." + (padTo2Digits(d1.getMonth() + 1)) + "." + d1.getFullYear();
@@ -537,9 +593,9 @@ async function buildFrontend(holeTrip) {
 
     if (holeTrip[i].subTrip.length > 1) {
 
-      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
+      code += '' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime + ', '+ holeTrip[i].holeDuration + ' Std, Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
     } else {
-      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
+      code += '' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', '+ holeTrip[i].holeDuration + ' Std, Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
     }
     code += '</button>\n</h2>';
     code += '<div id="collapseRoute' + i + '" class="accordion-collapse collapse">\n';
@@ -551,7 +607,7 @@ async function buildFrontend(holeTrip) {
       if (x !== 0) {
         code += '<div class="umstieg_output">&#128694; ' + holeTrip[i].subTrip[x - 1].expectedTransferTime + ' min, ' + holeTrip[i].subTrip[x - 1].timeToTransferinMinutes + ' min Umstiegszeit</div>';
       }
-
+      
       code += '<div class="accordion accordion-flush" id="' + i + 'bodySub' + x + '">'
       code += '<div class="accordion-item">'
       code += '<h2 class="accordion-header border rounded" id="' + i + 'bodyHeader' + x + '">'
@@ -622,7 +678,6 @@ async function buildFrontend(holeTrip) {
     code = "";
   }
   document.getElementById("outputRoutes").innerHTML += code + '<div class="d-flex justify-content-center"><div hidden="true"  id ="spinner2" class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #348AC7;" role="status"><span class="sr-only"></span> </div></div>';
-  sessionStorage.setItem('stopSession', actualStopsSessions + "#" + srcInput + "#" + destInput);
   document.getElementById("outputRoutes").innerHTML += '<button onclick="searchMore()" id="searchMore" class="btn-dark-blue btn-rounded">Weitere Routen suchen!</button>';
   document.getElementById("spinner").hidden = true;
   document.getElementById("spinner2").hidden = true;
@@ -751,9 +806,9 @@ async function addTripsToFrontend(holeTrip, lengthBefore){
 
     if (holeTrip[i].subTrip.length > 1) {
 
-      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
+      code += ''+ holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime +', ' +holeTrip[i].holeDuration + ' Std, Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
     } else {
-      code += '' + holeTrip[i].holeDuration + ' Std, ' + holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
+      code += ''+holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', '+holeTrip[i].holeDuration + ' Std, Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
     }
     code += '</button>\n</h2>';
     code += '<div id="collapseRoute' + i + '" class="accordion-collapse collapse">\n';

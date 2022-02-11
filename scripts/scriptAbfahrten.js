@@ -30,6 +30,9 @@ async function write(){
     if(!error5){
     for(let i=1;i<=size;i++){
 
+        if(arrival[i] == undefined)
+            break;
+
         if(typeVehicle[i] == "0")
             document.getElementById('busNr' + i).innerHTML = "🚆 "+arrival[i];
         else if(typeVehicle[i] == "5" || typeVehicle[i] == "6" || typeVehicle[i] == "7" || typeVehicle[i] == "10"){
@@ -80,6 +83,10 @@ async function clearTable(){
 
 
 async function getDepartures(station){
+
+    if(station === "")
+        return;
+
     station = station.split(" ").join("%20");
     stationSave = station;
     

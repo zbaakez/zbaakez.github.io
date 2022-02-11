@@ -317,7 +317,7 @@ function setAutocompleteListeners() {
       reenableKeyboardPhone(el)
       interval = setInterval(function () {
         getDepartures(stationID)
-      }, 30 * 100);
+      }, 30 * 1000);
 
     }
 

@@ -445,14 +445,14 @@ async function findTempByCoord(longitude, latitude) { //src === true if srcstati
   switch(desc){
     case "": urlAdd = ""; break;
     case "clear sky": urlAdd="Klarer Himmel"; break;
-    case "few clouds": urlAdd="Wenige Wolken"; break;
-    case "scattered clouds": urlAdd="Wolken"; break;
-    case "broken clouds": urlAdd="Wolken"; break;
-    case "shower clouds": urlAdd="Regenwolken"; break;
-    case "rain": urlAdd="Regen"; break;
-    case "thunderstorm": urlAdd="Gewitter"; break;
-    case "snow": urlAdd="Schneefall"; break;
-    case "mist": urlAdd="Nebelig"; break;
+    case "few clouds": urlAdd="Wenige Wolken ☁"; break;
+    case "scattered clouds": urlAdd="Wolken ☁"; break;
+    case "broken clouds": urlAdd="Wolken ☁"; break;
+    case "shower clouds": urlAdd="Regenwolken ☁"; break;
+    case "rain": urlAdd="Regen 🌧️"; break;
+    case "thunderstorm": urlAdd="Gewitter ⛈️"; break;
+    case "snow": urlAdd="Schneefall ❄️"; break;
+    case "mist": urlAdd="Nebelig 🌫️"; break;
     default: urlAdd="";
 
   }

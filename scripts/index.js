@@ -107,8 +107,10 @@ function swipedToRight(){
 function swipedToLeft(){
   
   if(document.getElementById("moveBtn").textContent.includes("Abfahrten")){
-    $("#about-2").toggle("slide", { direction: "right" }, 500);
-    $("#about-1").toggle("slide", { direction: "left" }, 500);
+    document.getElementById("abfahrtenTable").hidden = true;
+    hideFalseAfterLoading(400);
+    $("#about-2").toggle("slide", { direction: "right" }, 400);
+    $("#about-1").toggle("slide", { direction: "left" }, 400);
     window.scrollTo({top: 0, behavior: 'smooth'});
     document.getElementById("moveBtn").innerHTML = "Zu Verbindungen"
   }
@@ -123,14 +125,14 @@ function transistPage() {
   if (document.getElementById("moveBtn").textContent.includes("Abfahrten")) {
     document.getElementById("moveBtn").innerHTML = "Zu Verbindungen"
     document.getElementById("abfahrtenTable").hidden = true;
-    hideFalseAfterLoading();
+    hideFalseAfterLoading(500);
   } else {
     document.getElementById("moveBtn").innerHTML = "Zu Abfahrten"
   }
 }
 
-async function hideFalseAfterLoading() {
-  await new Promise(resolve => setTimeout(resolve, 500));
+async function hideFalseAfterLoading(time) {
+  await new Promise(resolve => setTimeout(resolve, time));
   document.getElementById("abfahrtenTable").hidden = false;
 }
 
@@ -157,9 +159,7 @@ async function getStops(text, { signal } = {}) {
     text = text.split(" ").join("%20");
     let urlStops = 'https://efa.sta.bz.it/apb/XML_STOPFINDER_REQUEST?locationServerActive=1&outputFormat=JSON&type_sf=any&name_sf=' + text;
     try {
-      fetch(urlStops).then(response => response.json()).then(data => { handleStops(data); }).catch(function () {
-        return;
-      });;
+      fetch(urlStops).then(res => res.json()).then(data => { handleStops(data); }).catch(function () {return;});;
     } catch (e) {
       return;
     }

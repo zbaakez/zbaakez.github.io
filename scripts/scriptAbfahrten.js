@@ -12,7 +12,8 @@ let countStops;
 async function write(){
 
     let temp = await findTempByCoord(xCoordValues[0], yCoordValues[0]);
-    document.getElementById("spinner3").hidden = true;
+    if(document.getElementById("spinner3") !== null)
+        document.getElementById("spinner3").hidden = true;
     document.getElementById("abfahrtenTemperatur").innerHTML = "<h5>Temperatur: "+temp[0]+" °C  -  "+temp[1]+"</h5>";
     document.getElementById("abfahrtenTemperatur").hidden = false;
 

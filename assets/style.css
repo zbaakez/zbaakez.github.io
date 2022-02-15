@@ -156,6 +156,15 @@ table{
     -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
     background-clip: padding-box;
+
+
+    max-height: 31vh;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+    /* add padding to account for vertical scrollbar */
+    padding-right: 20px;
+
   }
   
   .ui-autocomplete > li > div {
@@ -278,4 +287,14 @@ footer{
     background: linear-gradient(to right, #348ac775, #7474bf75); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     margin: 0,0,0,0;
     border-radius: 5px;
+}
+
+
+
+
+
+
+
+#map a {
+    font-size: smaller;
 }

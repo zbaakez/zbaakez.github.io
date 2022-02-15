@@ -4,6 +4,7 @@ let stops = []; //JSON with stopName and stopID
 let interval = null;
 let departureOrArrivalTime = true; //true means departure time, false means arrival time
 let routeType = 0; // 0 -> least time, 1 -> leastInterchange, 2->leastWalking
+let map = "";
 
 window.onload = function () {
 
@@ -40,7 +41,57 @@ window.onload = function () {
   if (actualStops[0] === "null")
     actualStops.shift();
 
+  addMap();
+
 };
+
+
+function addMap(){
+  mapboxgl.accessToken = 'pk.eyJ1IjoiemJhYWtleiIsImEiOiJja3pvaXJ3eWM0bnV2MnVvMTc2d2U5aTNpIn0.RY-K9qwZD1hseyM5TxLzww';
+  map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v11',
+  center: [11.3586,46.4964],
+  zoom: 10.5
+  });
+   
+  map.on('load', () => {
+    // Add zoom and rotation controls to the map.
+    map.addControl(new mapboxgl.NavigationControl());
+    map.addControl(new mapboxgl.FullscreenControl());
+    
+  // Add geolocate control to the map.
+  map.addControl(
+    new mapboxgl.GeolocateControl({
+    positionOptions: {
+    enableHighAccuracy: true
+    },
+    // When active the map will receive updates to the device's location as it changes.
+    trackUserLocation: true,
+    // Draw an arrow next to the location dot to indicate which direction the device is heading.
+    showUserHeading: true
+    })
+  );
+  });
+
+  // Example of a MapMouseEvent of type "click"
+map.on('click', (e) => {
+  console.log(e);
+  // {
+  //     lngLat: {
+  //         lng: 40.203,
+  //         lat: -74.451
+  //     },
+  //     originalEvent: {...},
+  //     point: {
+  //         x: 266,
+  //         y: 464
+  //     },
+  //      target: {...},
+  //      type: "click"
+  // }
+  });
+}
 
 
 function printTime() {
@@ -145,7 +196,7 @@ async function getStops(text, { signal } = {}) {
     }
 
 
-    text = text.split(" ").join("%20");
+    text = text.split(" ").join("%20");// name_origin=46.496901,11.3587048:WGS84[DD.DDDDD]
     let urlStops = 'https://efa.sta.bz.it/apb/XML_STOPFINDER_REQUEST?locationServerActive=1&outputFormat=JSON&type_sf=any&name_sf=' + text;
     try {
       fetch(urlStops).then(res => res.json()).then(data => { handleStops(data); }).catch(function () {return;});;
@@ -240,7 +291,7 @@ async function handleStops(data) {
 function setAutocompleteListeners() {
   $("#startInput").autocomplete({
     source: actualStops,
-    maxResults: 10,
+  //  maxResults: 10,
     minLength: 2,
     delay: 300,
     source: function (request, response) {
@@ -259,7 +310,7 @@ function setAutocompleteListeners() {
     }
   });
   $("#endInput").autocomplete({
-    maxResults: 10,
+   // maxResults: 10,
     minLength: 2,
     delay: 300,
     source: function (request, response) {
@@ -278,7 +329,7 @@ function setAutocompleteListeners() {
     }
   });
   $("#abfahrtenInput").autocomplete({
-    maxResults: 10,
+   // maxResults: 10,
     minLength: 2,
     delay: 300,
     source: function (request, response) {
@@ -325,6 +376,17 @@ async function reenableKeyboardPhone(el) {
 }
 
 function searchConnection() {
+
+  for(let i = 0;;i++){
+    var mapLayer = map.getLayer('route'+i);
+    if(typeof mapLayer !== 'undefined') {
+      // Remove map layer & source.
+      map.removeLayer('route'+i).removeSource('route'+i);
+    }
+    else
+      break;
+  }
+
   let el1 = document.getElementById('startInput');
   let el2 = document.getElementById('endInput');
   let el3 = document.getElementById('abfahrtenInput');
@@ -447,6 +509,7 @@ async function get2PointConnection(src, dest) {
 
 
   urlSud = 'https://efa.sta.bz.it/apb/XML_TRIP_REQUEST2?locationServerActive=1&stateless=%201&type_origin=any&name_origin=' + srcString + '&type_destination=any&name_destination=' + destString + '&' + arrOrDepTimeString + '&itdTime=' + startTime + '&itdDate=' + startDate + '&calcNumberOfTrips=' + howManyTrips + '&maxChanges=' + maxChanges + routeTypeString + '&useProxFootSearch=1&coordOutputFormatTail=4&outputFormat=JSON&coordOutputFormat=WGS84[DD.DDDDD]';
+  console.log(urlSud)
   $.getJSON(urlSud, function (data) {
     // JSON result in `data` variable
 
@@ -512,6 +575,7 @@ async function findTempByCoord(longitude, latitude) { //src === true if srcstati
     case "broken clouds": urlAdd="Wolken ☁"; break;
     case "shower clouds": urlAdd="Regenwolken ☁"; break;
     case "overcast clouds": urlAdd="Wolken";break;
+    case "light rain": urlAdd="Leichter Regen";break;
     case "rain": urlAdd="Regen 🌧️"; break;
     case "thunderstorm": urlAdd="Gewitter ⛈️"; break;
     case "snow": urlAdd="Schneefall ❄️"; break;
@@ -526,6 +590,33 @@ async function findTempByCoord(longitude, latitude) { //src === true if srcstati
 
 function padTo2Digits(num) {
   return num.toString().padStart(2, '0');
+}
+
+function drawThisRouteToMap(route){
+  var isExpanded = $("#0heading"+route).attr("aria-expanded");
+  if(isExpanded == "false")
+    return;
+  
+  //delete current route
+  for(let i = 0;;i++){
+    var mapLayer = map.getLayer('route'+i);
+    if(typeof mapLayer !== 'undefined') {
+      // Remove map layer & source.
+      map.removeLayer('route'+i).removeSource('route'+i);
+    }
+    else
+      break;
+  }
+  
+  // draw new route
+  for(let i =0; i<holeTrip[route].subTrip.length; i++){
+    writePathToMap(route, holeTrip[route].subTrip[i].path, i, holeTrip[route].subTrip[i].typeOfVehicle)
+  }
+  for(let i = 0; i<holeTrip[route].subTrip.length; i++){
+    //to do!! mark first and last station
+    writeTripStationsToMap(route, holeTrip[route].subTrip[i].stopCoords, i, holeTrip[route].subTrip[i].typeOfVehicle)
+  }
+
 }
 
 async function buildFrontend(holeTrip) {
@@ -554,7 +645,7 @@ async function buildFrontend(holeTrip) {
     }
     code += '<div class="accordion">\n';
     code += '<h2 class="accordion-item" id="headingRoute' + i + '">\n';
-    code += '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"\n';
+    code += '<button class="accordion-button collapsed" id="0heading'+i+'" onclick="drawThisRouteToMap('+i+')" type="button" data-bs-toggle="collapse"\n';
     code += ' data-bs-target="#collapseRoute' + i + '" aria-expanded="false" aria-controls="collapseRoute' + i + '">\n';
 
     code += "<div class=\"transferListOutput\">"
@@ -609,6 +700,7 @@ async function buildFrontend(holeTrip) {
 
 
     for (let x = 0; x < holeTrip[i].subTrip.length; x++) {
+      
 
       if (x !== 0) {
         code += '<div class="umstieg_output">&#128694; ' + holeTrip[i].subTrip[x - 1].expectedTransferTime + ' min, ' + holeTrip[i].subTrip[x - 1].timeToTransferinMinutes + ' min Umstiegszeit</div>';
@@ -689,6 +781,72 @@ async function buildFrontend(holeTrip) {
   document.getElementById("spinner2").hidden = true;
   document.getElementById("searchMore").disabled = false;
   document.getElementById("searchButton").disabled = false;
+  
+}
+
+
+function writeTripStationsToMap(tripNr, coord, changeNr, typeOfVehicle){
+  let color = chooseColor(typeOfVehicle);
+
+
+
+}
+
+function chooseColor(typeOfVehicle){
+  if (typeOfVehicle === "5" || typeOfVehicle === "6" || typeOfVehicle === "7") //bus
+    return "blue";
+  else if (typeOfVehicle === "0") // zug
+    return "black";
+  else if (typeOfVehicle === "8") // Seilbahn
+    return "brown";
+  else //zufuß oder anderes mittel
+    return "grey";
+  
+}
+
+function writePathToMap(tripNr, path, changeNr, typeOfVehicle){
+
+  let color = chooseColor(typeOfVehicle);
+  
+  let pathCoord = path.split(" ");
+  let coordArray = [];
+ 
+  for(let i = 0; i<pathCoord.length;  i++){
+    if(pathCoord[i] == undefined)
+      break;
+
+   coordArray.push([pathCoord[i].substr(0, pathCoord[i].indexOf(",")), pathCoord[i].substr(pathCoord[i].indexOf(",")+1)]);
+  
+  }
+
+  if(changeNr===0)
+    map.flyTo({center:[coordArray[0][0], coordArray[0][1]]});
+ 
+
+  map.addSource('route'+changeNr, {
+    'type': 'geojson',
+    'data': {
+    'type': 'Feature',
+    'properties': {},
+    'geometry': {
+    'type': 'LineString',
+    'coordinates': coordArray
+    }
+    }
+    });
+    map.addLayer({
+    'id': 'route'+changeNr,
+    'type': 'line',
+    'source': 'route'+changeNr,
+    'layout': {
+    'line-join': 'round',
+    'line-cap': 'round'
+    },
+    'paint': {
+    'line-color': color,
+    'line-width': 4
+    }
+    });
 }
 
 
@@ -769,12 +927,13 @@ async function addTripsToFrontend(holeTrip, lengthBefore){
     code = "<br>";
     code += '<div class="accordion">\n';
     code += '<h2 class="accordion-item" id="headingRoute' + i + '">\n';
-    code += '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"\n';
+    code += '<button  class="accordion-button collapsed" id="0heading'+i+'" onclick="drawThisRouteToMap('+i+')" type="button" data-bs-toggle="collapse"\n';
     code += ' data-bs-target="#collapseRoute' + i + '" aria-expanded="false" aria-controls="collapseRoute' + i + '">\n';
-    code += "<div class=\"transferListOutput\">"
+    code += '<div class="transferListOutput">'
     let next = "";
 
     for (let x = 0; x < holeTrip[i].subTrip.length; x++) {
+      
       if (x < holeTrip[i].subTrip.length - 1)
         next = ">";
       else
@@ -928,6 +1087,8 @@ class HoleTrip {
     let duration, realArrivalTime, realStartTime, nameOfTransfer, numberOfTransfer, srcStation, destStation, lastDesination, startTime, arrivalTime, typeOfVehicle, startDate, arrivalDate, trainPlatformStart, trainPlatformEnd, timeOfNextBus, timeToTransfer, expectedTransferTime;
     let stops = [], allStopArrivalTimes = [], allStopDepTimes = [];
     let srclatitude = 0, srclongitude = 0, destlatitude = 0, destlongitude = 0;
+    let path;
+    let stopCoords = [];
 
     //save every thing of every interChange into a new SubTrip class
     for (let i = 0; i < interChanges + 1; i++) {
@@ -953,14 +1114,18 @@ class HoleTrip {
       srclatitude = this.trip["legs"][i]["points"][0]["ref"]["coords"].split(",")[1];
       destlongitude = this.trip["legs"][i]["points"][1]["ref"]["coords"].split(",")[0];
       destlatitude = this.trip["legs"][i]["points"][1]["ref"]["coords"].split(",")[1];
+      path = this.trip["legs"][i]["path"];
+    
 
       stops = [];
       allStopDepTimes = [];
       allStopArrivalTimes = [];
+      stopCoords = [];
       //find all stops on your way
       if (this.trip["legs"][i]["stopSeq"] != undefined) {
         for (let x = 0; x < this.trip["legs"][i]["stopSeq"].length; x++) {
           stops.push(this.trip["legs"][i]["stopSeq"][x]["name"]); //read all station names
+          stopCoords.push(this.trip["legs"][i]["stopSeq"][x]["ref"]["coords"]);
           if (x > 0) {
             allStopDepTimes.push(this.trip["legs"][i]["stopSeq"][x]["depDateTime"]);
             allStopArrivalTimes.push(this.trip["legs"][i]["stopSeq"][x]["ref"]["arrDateTime"])
@@ -983,9 +1148,10 @@ class HoleTrip {
         else
           expectedTransferTime = 0;
       }
+     
       this.subTrip[i] = new SubTrip(i, duration, realStartTime, srclatitude, srclongitude, destlatitude, destlongitude, realArrivalTime, allStopDepTimes, allStopArrivalTimes, nameOfTransfer, numberOfTransfer, srcStation, destStation, lastDesination,
         startTime, arrivalTime, typeOfVehicle, startDate, arrivalDate, trainPlatformStart,
-        trainPlatformEnd, timeOfNextBus, timeToTransfer, expectedTransferTime, stops);
+        trainPlatformEnd, timeOfNextBus, timeToTransfer, expectedTransferTime, stops, path, stopCoords);
 
     }
 
@@ -996,7 +1162,11 @@ class HoleTrip {
 
 class SubTrip {
   //evtl busseite usw
-  constructor(tripId, duration, rtStartTime, srclatitude, srclongitude, destLatitude, destLongitude, rtArrivalTime, allStopDepTimes, allStopArrivalTimes, nameOfTransfer, numberOfTransfer, srcStation, destStation, lastDesination, startTime, arrivalTime, typeOfVehicle, startDate, arrivalDate, trainPlatformStart, trainPlatformEnd, timeOfNextBus, timeToTransfer, expectedTransferTime = 0, stops) {
+  constructor(tripId, duration, rtStartTime, srclatitude, srclongitude, destLatitude, destLongitude, rtArrivalTime, 
+    allStopDepTimes, allStopArrivalTimes, nameOfTransfer, numberOfTransfer, srcStation, destStation, lastDesination, startTime, 
+    arrivalTime, typeOfVehicle, startDate, arrivalDate, trainPlatformStart, trainPlatformEnd, timeOfNextBus, timeToTransfer, 
+    expectedTransferTime = 0, stops, path, stopCoords) {
+
     this.tripId = tripId;
     this.duration = duration;
     this.numberOfTransfer = numberOfTransfer; //busnr
@@ -1023,6 +1193,8 @@ class SubTrip {
     this.srcStationLongitude = srclongitude;
     this.EndStationLatitude = destLatitude;
     this.EndStationLongitude = destLongitude;
+    this.path = path; //path of hole route for map
+    this.stopCoords = stopCoords.slice(); //longtitude,latitude of all stops for map
   }
 
 }

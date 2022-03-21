@@ -91,6 +91,7 @@ map.on('click', (e) => {
   //      type: "click"
   // }
   });
+
 }
 
 
@@ -588,6 +589,8 @@ async function findTempByCoord(longitude, latitude) { //src === true if srcstati
   return value;
 }
 
+
+
 function padTo2Digits(num) {
   return num.toString().padStart(2, '0');
 }
@@ -847,6 +850,9 @@ function writePathToMap(tripNr, path, changeNr, typeOfVehicle){
     'line-width': 4
     }
     });
+
+    
+
 }
 
 

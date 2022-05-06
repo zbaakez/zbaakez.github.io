@@ -31,12 +31,12 @@ window.onload = function () {
   setInterval(printTime, 1000);
 
   //swipes for mobile devices
-  document.addEventListener('swiped-left', function(e) {
+ /* document.addEventListener('swiped-left', function(e) {
     swipedToLeft();
   });
   document.addEventListener('swiped-right', function(e) {
     swipedToRight()
-  });
+  });*/
 
   if (actualStops[0] === "null")
     actualStops.shift();

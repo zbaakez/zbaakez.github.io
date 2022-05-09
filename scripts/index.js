@@ -977,9 +977,9 @@ async function addTripsToFrontend(holeTrip, lengthBefore){
 
     if (holeTrip[i].subTrip.length > 1) {
 
-      code += ''+ holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime +', ' +holeTrip[i].holeDuration + ' Std, Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
+      code += ''+ holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[holeTrip[i].subTrip.length - 1].rtArrivalTime +', ' +holeTrip[i].holeDuration + ' Std<br>Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
     } else {
-      code += ''+holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', '+holeTrip[i].holeDuration + ' Std, Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
+      code += ''+holeTrip[i].subTrip[0].rtStartTime + ' - ' + holeTrip[i].subTrip[0].rtArrivalTime + ', '+holeTrip[i].holeDuration + ' Std<br>Von: ' + holeTrip[i].subTrip[0].srcStation + '' + date + '</h5>\n';
     }
     code += '</button>\n</h2>';
     code += '<div id="collapseRoute' + i + '" class="accordion-collapse collapse">\n';

@@ -198,7 +198,8 @@ async function getStops(text, { signal } = {}) {
 
 
     text = text.split(" ").join("%20");// name_origin=46.496901,11.3587048:WGS84[DD.DDDDD]
-    let urlStops = 'https://efa.sta.bz.it/apb/XML_STOPFINDER_REQUEST?locationServerActive=1&outputFormat=JSON&type_sf=any&name_sf=' + text;
+    let urlStops = 'https://efa.sta.bz.it/apb/XML_STOPFINDER_REQUEST?locationServerActive=1&outputFormat=JSON&language=de&type_sf=any&name_sf=' + text;
+    console.log(urlStops);
     try {
       fetch(urlStops).then(res => res.json()).then(data => { handleStops(data); }).catch(function () {return;});;
     } catch (e) {
@@ -225,7 +226,7 @@ async function handleStops(data) {
         stops.push(stopToPush)
       }
       //Bozen gibt komische Daten
-      //https://efa.sta.bz.it/apb/XML_STOPFINDER_REQUEST?locationServerActive=1&outputFormat=JSON&type_sf=any&name_sf=Bozen
+      //https://efa.sta.bz.it/apb/XML_STOPFINDER_REQUEST?locationServerActive=1&outputFormat=JSON&language=de&type_sf=any&name_sf=Bozen
       if (data["stopFinder"]["points"]["point"]["name"] === "Bozen, Bahnhof Bozen") {
         //add Bozen Süd, Kaiserau, ...
         if (!actualStops.includes("Bozen, Bahnhof Bozen Süd")){
@@ -509,7 +510,7 @@ async function get2PointConnection(src, dest) {
  // stopsClass
 
 
-  urlSud = 'https://efa.sta.bz.it/apb/XML_TRIP_REQUEST2?locationServerActive=1&stateless=%201&type_origin=any&name_origin=' + srcString + '&type_destination=any&name_destination=' + destString + '&' + arrOrDepTimeString + '&itdTime=' + startTime + '&itdDate=' + startDate + '&calcNumberOfTrips=' + howManyTrips + '&maxChanges=' + maxChanges + routeTypeString + '&useProxFootSearch=1&coordOutputFormatTail=4&outputFormat=JSON&coordOutputFormat=WGS84[DD.DDDDD]';
+  urlSud = 'https://efa.sta.bz.it/apb/XML_TRIP_REQUEST2?locationServerActive=1&language=de&stateless=%201&type_origin=any&name_origin=' + srcString + '&type_destination=any&name_destination=' + destString + '&' + arrOrDepTimeString + '&itdTime=' + startTime + '&itdDate=' + startDate + '&calcNumberOfTrips=' + howManyTrips + '&maxChanges=' + maxChanges + routeTypeString + '&useProxFootSearch=1&coordOutputFormatTail=4&outputFormat=JSON&coordOutputFormat=WGS84[DD.DDDDD]';
   console.log(urlSud)
   $.getJSON(urlSud, function (data) {
     // JSON result in `data` variable

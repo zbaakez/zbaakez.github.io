@@ -90,16 +90,15 @@ async function getDepartures(station){
     station = station.split(" ").join("%20");
     stationSave = station;
     
-    let haltestellenLink = "https://efa.sta.bz.it/apb/XML_DM_REQUEST?&locationServerActive=1&outputFormat=JSON&stateless=1&type_dm=any&name_dm="+station+"&mode=direct&coordOutputFormatTail=4&outputFormat=JSON&coordOutputFormat=WGS84[DD.DDDDD]&limit=21";
+    let haltestellenLink = "https://efa.sta.bz.it/apb/XML_DM_REQUEST?&locationServerActive=1&outputFormat=JSON&language=de&stateless=1&type_dm=any&name_dm="+station+"&mode=direct&coordOutputFormatTail=4&outputFormat=JSON&coordOutputFormat=WGS84[DD.DDDDD]&limit=21";
+    console.log(haltestellenLink)
     await fetch(haltestellenLink)  
     .then(res => res.json())
     .then(data =>{getData(data);})
     .catch(err => {  
-   
+        console.log(err);
     });  
-    
-    write();
-    
+   
 }
 
 async function getData(data){
@@ -107,7 +106,6 @@ async function getData(data){
     if(data["departureList"]==null || data ==null){
         error5 = true;
         for(let i=1;i<=20;i++){
-            
             document.getElementById('busNr' + i).innerHTML = "";
             document.getElementById('start' + i).innerHTML = "";
             document.getElementById('ankunft'+ i).innerHTML = "";
@@ -117,7 +115,6 @@ async function getData(data){
         
     }else
         error5=false;
-
     try{
         size = (data["departureList"]).length;
     }catch(error){
@@ -128,14 +125,12 @@ async function getData(data){
     countStops = 0;
     let hour;
     let minute;
-    let busStops = [];
     arrival = [];
     yCoordValues=[];
     platform=[];
     platformName=[];
     typeVehicle=[];
     for(let i=0;i<size;i++){
-    
         arrival[i] = (data["departureList"][i]["servingLine"]["number"]);
         xCoordValues[i] = data["departureList"][i]["x"];
         yCoordValues[i] = data["departureList"][i]["y"];
@@ -144,15 +139,11 @@ async function getData(data){
         typeVehicle[i] = data["departureList"][i]["servingLine"]["motType"];
         hour = (data["departureList"][i]["dateTime"]["hour"]);
         minute = (data["departureList"][i]["dateTime"]["minute"]);
-        if(minute<10){
-            minute = "0" + minute;
-        }
+        if(minute<10){minute = "0" + minute;}
         startTime[i] = hour + ":" + minute;
         destination[i] = (data["departureList"][i]["servingLine"]["direction"]);
-        
         direction[i] = (data["departureList"][i]["servingLine"]["liErgRiProj"]["direction"]);
-
-            
     }
+    write(); 
     return;
 }
